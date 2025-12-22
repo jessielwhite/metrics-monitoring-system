@@ -1,6 +1,7 @@
 # Dependencies
 __pycache__/
 *.pyc
+.next
 node_modules
 dist
 /target/
@@ -21,4 +22,4 @@ system.yaml
 .DS_Store
 
 # IP
-proprietary.md
+proprietary.*

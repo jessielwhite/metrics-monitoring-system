@@ -1,5 +1,0 @@
-[00:00:00.309] Server  LOG      ✓ Ready in 206ms
-[00:00:01.884] Server  ERROR    ⨯ TypeError: Failed to parse URL from /api/metrics/current
-[00:00:01.976] Browser ERROR   uncaughtError: TypeError: Failed to parse URL from /api/metrics/current
-[00:01:09.664] Server  ERROR    ⨯ Error: Failed to fetch current metric
-[00:01:09.733] Browser ERROR   uncaughtError: Error: Failed to fetch current metric
