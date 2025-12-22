@@ -1,0 +1,72 @@
+[
+  {
+    "_id": {"$oid": "507f1f77bcf86cd799439011"},
+    "timestamp": {"$date": "2023-12-21T10:00:00Z"},
+    "process_id": "1234",
+    "process_name": "nginx",
+    "type": "cpu",
+    "utilization": 45.5,
+    "latency": 15.2,
+    "throughput": 850.5,
+    "memory_used": 1024,
+    "memory_total": 4096,
+    "temperature": 65.0,
+    "power_draw": 150.0
+  },
+  {
+    "_id": {"$oid": "507f191e810c19729de860ea"},
+    "timestamp": {"$date": "2023-12-21T10:05:00Z"},
+    "process_id": "5678",
+    "process_name": "python",
+    "type": "memory",
+    "utilization": 30.2,
+    "latency": 45.8,
+    "throughput": 320.1,
+    "memory_used": 512,
+    "memory_total": 2048,
+    "temperature": 55.0,
+    "power_draw": 120.0
+  },
+  {
+    "_id": {"$oid": "507f1f77bcf86cd799439012"},
+    "timestamp": {"$date": "2023-12-21T10:10:00Z"},
+    "process_id": "9101",
+    "process_name": "java",
+    "type": "gpu",
+    "utilization": 78.9,
+    "latency": 8.5,
+    "throughput": 1200.0,
+    "memory_used": 2048,
+    "memory_total": 8192,
+    "temperature": 75.0,
+    "power_draw": 200.0
+  },
+  {
+    "_id": {"$oid": "507f191e810c19729de860eb"},
+    "timestamp": {"$date": "2023-12-21T10:15:00Z"},
+    "process_id": "1121",
+    "process_name": "node",
+    "type": "cpu",
+    "utilization": 62.3,
+    "latency": 22.1,
+    "throughput": 675.3,
+    "memory_used": 768,
+    "memory_total": 3072,
+    "temperature": 60.0,
+    "power_draw": 135.0
+  },
+  {
+    "_id": {"$oid": "507f1f77bcf86cd799439013"},
+    "timestamp": {"$date": "2023-12-21T10:20:00Z"},
+    "process_id": "3141",
+    "process_name": "postgres",
+    "type": "memory",
+    "utilization": 25.7,
+    "latency": 12.3,
+    "throughput": 950.7,
+    "memory_used": 1536,
+    "memory_total": 6144,
+    "temperature": 50.0,
+    "power_draw": 110.0
+  }
+]

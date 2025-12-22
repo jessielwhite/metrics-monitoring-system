@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package test;
+
+message TestRequest {
+  string test_before = 1;
+}
+
+message TestResponse {
+  string test_after = 1;
+}
+
+service Test {
+  rpc TestMethod(TestRequest) returns (TestResponse);
+}
+
+// Metrics related messages
+message Metric {
+  string name = 1;
+  double value = 2;
+  int64 timestamp = 3; // Unix timestamp in milliseconds
+  string agent_id = 4;
+  string unit = 5; // e.g., "ms", "bytes", "%"
+}
+
+message SubmitMetricsRequest {
+  repeated Metric metrics = 1;
+}
+
+message SubmitMetricsResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetMetricsRequest {
+  // Optional filters
+  string agent_id = 1;
+  string metric_name = 2;
+  int64 start_time = 3; // Unix timestamp in milliseconds
+  int64 end_time = 4;
+}
+
+message GetMetricsResponse {
+  repeated Metric metrics = 1;
+}
+
+service MetricsService {
+  rpc SubmitMetrics(SubmitMetricsRequest) returns (SubmitMetricsResponse);
+  rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse);
+}

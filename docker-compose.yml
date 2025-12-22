@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=metrics_db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - metrics-network
+
+  server:
+    build: ./server
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    environment:
+     - MONGODB_URI=mongodb+srv://jleveewhite_db_user:2gKGyEeOuHOP3C1t@monitoring-cluster.yxtcr2j.mongodb.net/?appName=monitoring-cluster
+      - DATABASE_NAME=metrics_collection
+      - COLLECTION_NAME=JLW
+      - RUST_SERVICE_URL=0.0.0.0:3000
+    networks:
+      - metrics-network
+
+  agent:
+    build: ./agent
+    depends_on:
+      - server
+      - mongodb
+    environment:
+      - RUST_SERVICE_URL=server:3000
+      - MONGODB_URI=mongodb+srv://jleveewhite_db_user:2gKGyEeOuHOP3C1t@monitoring-cluster.yxtcr2j.mongodb.net/?appName=monitoring-cluster
+      - DATABASE_NAME=metrics_collection
+      - COLLECTION_NAME=JLW
+    networks:
+      - metrics-network
+
+  www:
+    build: ./www
+    ports:
+      - "3001:3000"
+    depends_on:
+      - server
+      - mongodb
+    environment:
+      - RUST_SERVICE_URL=server:3000
+      - MONGODB_URI=mongodb+srv://jleveewhite_db_user:2gKGyEeOuHOP3C1t@monitoring-cluster.yxtcr2j.mongodb.net/?appName=monitoring-cluster
+      - DATABASE_NAME=metrics_collection
+      - COLLECTION_NAME=JLW
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    networks:
+      - metrics-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  metrics-network:
+    driver: bridge

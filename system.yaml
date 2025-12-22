@@ -1,0 +1,8 @@
+/my-project
+  /default-service
+    app.yaml
+    main.py (or your main application file)
+  /backend-service
+    app.yaml
+    backend.js (or your application file)
+  dispatch.yaml (optional, for custom routing)
