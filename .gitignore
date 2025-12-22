@@ -15,6 +15,10 @@ dist
 # Environments
 *.env
 *venv*
+system.yaml
 
 # OSX
 .DS_Store
+
+# IP
+proprietary.md
