@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import os
-import requests
 import grpc
 import time
 import psutil
 import random
 from datetime import datetime
+import test_pb2
+import test_pb2_grpc
 
 def collect_metrics():
     timestamp = datetime.now().isoformat() + 'Z'
@@ -47,25 +48,58 @@ def collect_metrics():
         'power_draw': int(power_draw),
     }
 
+def create_proto_metric(name, value, agent_id, unit=""):
+    """Create a protobuf Metric message"""
+    return test_pb2.Metric(
+        name=name,
+        value=float(value),
+        timestamp=int(datetime.now().timestamp() * 1000),
+        agent_id=agent_id,
+        unit=unit
+    )
+
 def main():
-    # Connect to server for gRPC fallback
-    RUST_SERVICE_URL = os.getenv("RUST_SERVICE_URL", "localhost:8080")
-    METRICS_ENDPOINT = f"http://{RUST_SERVICE_URL}/metrics/ingest"
+    # gRPC configuration
+    GRPC_SERVER = os.getenv("GRPC_SERVER", "server:50051")
+    AGENT_ID = os.getenv("AGENT_ID", f"agent-{os.getpid()}")
     
     print(f"Metrics Agent started...")
-    print(f"Sending metrics to: {METRICS_ENDPOINT}")
+    print(f"Agent ID: {AGENT_ID}")
+    print(f"Sending metrics to gRPC server: {GRPC_SERVER}")
+
+    # Create gRPC channel
+    channel = grpc.insecure_channel(GRPC_SERVER)
+    stub = test_pb2_grpc.MetricsServiceStub(channel)
 
     while True:
         try:
             metrics_data = collect_metrics()
-            response = requests.post(
-                METRICS_ENDPOINT, json=metrics_data, timeout=2)
-            if response.status_code == 202:
-                print(f"Sent: {metrics_data}")
+            
+            # Create protobuf metrics
+            proto_metrics = [
+                create_proto_metric("cpu_utilization", metrics_data['utilization'], AGENT_ID, "%"),
+                create_proto_metric("latency", metrics_data['latency'], AGENT_ID, "ms"),
+                create_proto_metric("throughput", metrics_data['throughput'], AGENT_ID, "ops/s"),
+                create_proto_metric("memory_used", metrics_data['memory_used'], AGENT_ID, "MB"),
+                create_proto_metric("memory_total", metrics_data['memory_total'], AGENT_ID, "MB"),
+                create_proto_metric("temperature", metrics_data['temperature'], AGENT_ID, "°C"),
+                create_proto_metric("power_draw", metrics_data['power_draw'], AGENT_ID, "W"),
+            ]
+            
+            # Submit via gRPC
+            request = test_pb2.SubmitMetricsRequest(metrics=proto_metrics)
+            response = stub.SubmitMetrics(request, timeout=5)
+            
+            if response.success:
+                print(f"✓ Submitted {len(proto_metrics)} metrics via gRPC")
+                print(f"  CPU: {metrics_data['utilization']}%, Memory: {metrics_data['memory_used']}/{metrics_data['memory_total']} MB")
             else:
-                print(f"Error: {response.status_code}")
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to send metrics_data: {e}")
+                print(f"✗ Error: {response.message}")
+                
+        except grpc.RpcError as e:
+            print(f"✗ gRPC Error: {e.code()} - {e.details()}")
+        except Exception as e:
+            print(f"✗ Failed to send metrics: {e}")
 
         time.sleep(10)  # Submit every 10 seconds
 

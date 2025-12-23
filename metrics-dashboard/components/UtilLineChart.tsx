@@ -1,8 +1,6 @@
 'use client';
 
-import { LineChart } from './LineChart';
-
-import { ChartTooltip } from './ChartTooltip';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Metric } from '../app/api/types';
 
 interface UtilLineChartProps {
@@ -33,19 +31,39 @@ export function UtilLineChart({ data, timeRange }: UtilLineChartProps) {
     };
 
     return (
-        <div className='mb-8'>
-            <LineChart
-                className='h-80 w-full select-none'
-                data={data}
-                index='timestamp'
-                categories={['utilization']}
-                colors={['blue']}
-                customTooltip={ChartTooltip}
-                yAxisWidth={40}
-                xAxisFormatter={formatXAxis}
-                tickGap={30}
-                legendPosition='left'
-            />
+        <div className='mb-8 h-80'>
+            <ResponsiveContainer width='100%' height='100%'>
+                <LineChart data={data}>
+                    <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
+                    <XAxis
+                        dataKey='timestamp'
+                        tickFormatter={formatXAxis}
+                        stroke='#9CA3AF'
+                        style={{ fontSize: '12px' }}
+                    />
+                    <YAxis
+                        stroke='#9CA3AF'
+                        width={40}
+                        style={{ fontSize: '12px' }}
+                    />
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: '#1F2937',
+                            border: '1px solid #374151',
+                            borderRadius: '6px',
+                            color: '#F3F4F6',
+                        }}
+                        labelFormatter={(label) => formatXAxis(label as string)}
+                    />
+                    <Line
+                        type='monotone'
+                        dataKey='utilization'
+                        stroke='#3B82F6'
+                        strokeWidth={2}
+                        dot={false}
+                    />
+                </LineChart>
+            </ResponsiveContainer>
         </div>
     );
 }

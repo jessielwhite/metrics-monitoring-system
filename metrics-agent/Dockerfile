@@ -15,5 +15,5 @@ COPY metrics-agent/*.py ./
 # Generate proto code
 RUN python -m grpc_tools.protoc --python_out=. --grpc_python_out=. -I./proto ./proto/test/test.proto
 
-# Use the gRPC-enabled agent
-CMD ["python", "agent_grpc.py"]
+# Run the agent
+CMD ["python", "agent.py"]

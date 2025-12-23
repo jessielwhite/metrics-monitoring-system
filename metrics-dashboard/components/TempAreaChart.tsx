@@ -1,7 +1,6 @@
 'use client';
 
-import { AreaChart } from './AreaChart';
-import { ChartTooltip } from './ChartTooltip';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Metric } from '../app/api/types';
 
 interface TempAreaChartProps {
@@ -32,19 +31,39 @@ export function TempAreaChart({ data, timeRange }: TempAreaChartProps) {
     };
 
     return (
-        <div className='mb-8'>
-            <AreaChart
-                className='h-80 w-full select-none'
-                data={data}
-                index='timestamp'
-                categories={['temperature']}
-                colors={['pink']}
-                customTooltip={ChartTooltip}
-                yAxisWidth={40}
-                xAxisFormatter={formatXAxis}
-                tickGap={30}
-                legendPosition='left'
-            />
+        <div className='mb-8 h-80'>
+            <ResponsiveContainer width='100%' height='100%'>
+                <AreaChart data={data}>
+                    <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
+                    <XAxis
+                        dataKey='timestamp'
+                        tickFormatter={formatXAxis}
+                        stroke='#9CA3AF'
+                        style={{ fontSize: '12px' }}
+                    />
+                    <YAxis
+                        stroke='#9CA3AF'
+                        width={40}
+                        style={{ fontSize: '12px' }}
+                    />
+                    <Tooltip
+                        contentStyle={{
+                            backgroundColor: '#1F2937',
+                            border: '1px solid #374151',
+                            borderRadius: '6px',
+                            color: '#F3F4F6',
+                        }}
+                        labelFormatter={(label) => formatXAxis(label as string)}
+                    />
+                    <Area
+                        type='monotone'
+                        dataKey='temperature'
+                        stroke='#EC4899'
+                        fill='#EC4899'
+                        fillOpacity={0.3}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
         </div>
     );
 }
