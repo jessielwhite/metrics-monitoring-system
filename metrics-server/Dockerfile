@@ -1,4 +1,4 @@
-FROM rust:1.83 as builder
+FROM rust:1.83 AS builder
 
 # Install protobuf compiler
 RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*

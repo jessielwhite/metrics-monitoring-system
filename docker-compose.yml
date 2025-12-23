@@ -1,66 +1,25 @@
-version: '3.8'
-
 services:
-  server:
+  metrics-system:
+    platform: linux/amd64
     build: 
       context: .
-      dockerfile: ./metrics-server/Dockerfile
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
     ports:
       - "8080:8080"
       - "50051:50051"
+      - "8081:8081"
+      - "3000:3000"
     env_file:
       - config.env
     environment:
       - RUST_SERVICE_URL=0.0.0.0:8080
       - GRPC_PORT=50051
-    networks:
-      - metrics-network
-    restart: unless-stopped
-
-  api-server:
-    build:
-      context: ./api-server
-      dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
-    env_file:
-      - config.env
-    environment:
       - PORT=8081
-      - RUST_SERVICE_URL=http://server:8080
-    networks:
-      - metrics-network
-    restart: unless-stopped
-
-  agent:
-    build:
-      context: .
-      dockerfile: ./metrics-agent/Dockerfile
-    depends_on:
-      - server
-    env_file:
-      - config.env
-    environment:
-      - GRPC_SERVER=server:50051
-      - AGENT_ID=agent-docker-1
-    networks:
-      - metrics-network
-    restart: unless-stopped
-
-  dashboard:
-    build:
-      context: ./metrics-dashboard
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    depends_on:
-      - api-server
-      - server
-    env_file:
-      - config.env
-    environment:
       - NEXT_PUBLIC_API_URL=${VERCEL_URL:-http://localhost:8081}
-      - GRPC_SERVER=server:50051
+      - GRPC_SERVER=localhost:50051
+      - AGENT_ID=agent-docker-1
       - NODE_ENV=production
     networks:
       - metrics-network

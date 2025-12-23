@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from test import test_pb2 as test_dot_test__pb2
+import test_pb2 as test__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in test/test_pb2_grpc.py depends on'
+        + ' but the generated code in test_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,8 +36,8 @@ class TestStub(object):
         """
         self.TestMethod = channel.unary_unary(
                 '/test.Test/TestMethod',
-                request_serializer=test_dot_test__pb2.TestRequest.SerializeToString,
-                response_deserializer=test_dot_test__pb2.TestResponse.FromString,
+                request_serializer=test__pb2.TestRequest.SerializeToString,
+                response_deserializer=test__pb2.TestResponse.FromString,
                 _registered_method=True)
 
 
@@ -55,8 +55,8 @@ def add_TestServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'TestMethod': grpc.unary_unary_rpc_method_handler(
                     servicer.TestMethod,
-                    request_deserializer=test_dot_test__pb2.TestRequest.FromString,
-                    response_serializer=test_dot_test__pb2.TestResponse.SerializeToString,
+                    request_deserializer=test__pb2.TestRequest.FromString,
+                    response_serializer=test__pb2.TestResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -84,8 +84,8 @@ class Test(object):
             request,
             target,
             '/test.Test/TestMethod',
-            test_dot_test__pb2.TestRequest.SerializeToString,
-            test_dot_test__pb2.TestResponse.FromString,
+            test__pb2.TestRequest.SerializeToString,
+            test__pb2.TestResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -108,13 +108,13 @@ class MetricsServiceStub(object):
         """
         self.SubmitMetrics = channel.unary_unary(
                 '/test.MetricsService/SubmitMetrics',
-                request_serializer=test_dot_test__pb2.SubmitMetricsRequest.SerializeToString,
-                response_deserializer=test_dot_test__pb2.SubmitMetricsResponse.FromString,
+                request_serializer=test__pb2.SubmitMetricsRequest.SerializeToString,
+                response_deserializer=test__pb2.SubmitMetricsResponse.FromString,
                 _registered_method=True)
         self.GetMetrics = channel.unary_unary(
                 '/test.MetricsService/GetMetrics',
-                request_serializer=test_dot_test__pb2.GetMetricsRequest.SerializeToString,
-                response_deserializer=test_dot_test__pb2.GetMetricsResponse.FromString,
+                request_serializer=test__pb2.GetMetricsRequest.SerializeToString,
+                response_deserializer=test__pb2.GetMetricsResponse.FromString,
                 _registered_method=True)
 
 
@@ -138,13 +138,13 @@ def add_MetricsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SubmitMetrics': grpc.unary_unary_rpc_method_handler(
                     servicer.SubmitMetrics,
-                    request_deserializer=test_dot_test__pb2.SubmitMetricsRequest.FromString,
-                    response_serializer=test_dot_test__pb2.SubmitMetricsResponse.SerializeToString,
+                    request_deserializer=test__pb2.SubmitMetricsRequest.FromString,
+                    response_serializer=test__pb2.SubmitMetricsResponse.SerializeToString,
             ),
             'GetMetrics': grpc.unary_unary_rpc_method_handler(
                     servicer.GetMetrics,
-                    request_deserializer=test_dot_test__pb2.GetMetricsRequest.FromString,
-                    response_serializer=test_dot_test__pb2.GetMetricsResponse.SerializeToString,
+                    request_deserializer=test__pb2.GetMetricsRequest.FromString,
+                    response_serializer=test__pb2.GetMetricsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -172,8 +172,8 @@ class MetricsService(object):
             request,
             target,
             '/test.MetricsService/SubmitMetrics',
-            test_dot_test__pb2.SubmitMetricsRequest.SerializeToString,
-            test_dot_test__pb2.SubmitMetricsResponse.FromString,
+            test__pb2.SubmitMetricsRequest.SerializeToString,
+            test__pb2.SubmitMetricsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -199,8 +199,8 @@ class MetricsService(object):
             request,
             target,
             '/test.MetricsService/GetMetrics',
-            test_dot_test__pb2.GetMetricsRequest.SerializeToString,
-            test_dot_test__pb2.GetMetricsResponse.FromString,
+            test__pb2.GetMetricsRequest.SerializeToString,
+            test__pb2.GetMetricsResponse.FromString,
             options,
             channel_credentials,
             insecure,
