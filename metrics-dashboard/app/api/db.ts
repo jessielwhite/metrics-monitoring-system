@@ -14,7 +14,11 @@ export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db
   }
 
   try {
-    const client = MONGODB_URI ? new MongoClient(MONGODB_URI) : null;
+    if (!MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined');
+    }
+    
+    const client = new MongoClient(MONGODB_URI);
     await client.connect();
     const db = client.db(DATABASE_NAME);
 
@@ -33,6 +37,9 @@ export async function connectToDatabase(): Promise<{ client: MongoClient; db: Db
 }
 
 export async function getMetricsCollection() {
+  if (!COLLECTION_NAME) {
+    throw new Error('COLLECTION_NAME is not defined');
+  }
   const { db } = await connectToDatabase();
   return db.collection(COLLECTION_NAME);
 }

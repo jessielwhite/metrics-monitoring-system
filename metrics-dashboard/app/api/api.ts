@@ -1,6 +1,6 @@
-import { Metric, WorkloadStatus } from './types';
+import { Metric, MetricsHistoryQuery, MetricsStats, MetricsHistoryResponse, MetricsStatsResponse } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.1.67:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 
 export async function getCurrentMetric(): Promise<Metric> {
     const response = await fetch(`${API_URL}/api/metrics/current`);
@@ -9,18 +9,12 @@ export async function getCurrentMetric(): Promise<Metric> {
         throw new Error('Failed to fetch current metric');
     }
 
-    const metrics = await response.json();
-    if (metrics.length === 0) {
-        throw new Error('No metrics found');
-    }
-
-    return metrics[0];
+    return response.json();
 }
 
-export async function getMetricsHistory(timeRange: '1h' | '24h' | '7d', agentId?: string, type?: string): Promise<Metric[]> {
-    let url = `${API_URL}/api/metrics/history?range=${timeRange}`;
-    if (agentId) url += `&agent_id=${agentId}`;
-    if (type) url += `&type=${type}`;
+export async function getMetricsHistory(query: { range?: string }): Promise<MetricsHistoryResponse> {
+    const range = query.range || '1h';
+    const url = `${API_URL}/api/metrics/history?range=${range}`;
 
     const response = await fetch(url);
 
@@ -31,37 +25,11 @@ export async function getMetricsHistory(timeRange: '1h' | '24h' | '7d', agentId?
     return response.json();
 }
 
-export async function getWorkloadStatus(): Promise<WorkloadStatus> {
-    let response;
-
-        response = await fetch(`${API_URL}/api/workload/status`);
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch workload status');
-        }
-
-        return response.json();
-    }
-
-export async function startWorkload(): Promise<WorkloadStatus> {
-    const response = await fetch(`${API_URL}/api/workload/start`, {
-        method: 'POST',
-    });
+export async function getMetricsStats(MetricsStats: MetricsStats): Promise<MetricsStatsResponse> {
+    const response = await fetch(`${API_URL}/api/metrics/stats?${MetricsStats}`);
 
     if (!response.ok) {
-        throw new Error('Failed to start workload');
-    }
-
-    return response.json();
-}
-
-export async function stopWorkload(): Promise<WorkloadStatus> {
-    const response = await fetch(`${API_URL}/api/workload/stop`, {
-        method: 'POST',
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to stop workload');
+        throw new Error('Failed to fetch metrics stats');
     }
 
     return response.json();

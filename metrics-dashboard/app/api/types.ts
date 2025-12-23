@@ -13,8 +13,23 @@ export interface Metric {
   power_draw: number;
 }
 
-export interface WorkloadStatus {
-  status: 'never_started' | 'running' | 'stopped';
-  pid?: number;
-  started_at?: string;
+export interface MetricsHistoryQuery {
+  start_time?: string;
+  end_time?: string;
+  limit?: number;
 }
+export interface MetricsStats {
+  avg_utilization: number;
+  avg_latency: number;
+  avg_throughput: number;
+  avg_temperature: number;
+  avg_power_draw: number;
+  max_utilization: number;
+  max_latency: number;
+  min_latency: number;
+  total_metrics: number;
+}
+
+export type CurrentMetricsResponse = ReadableStream<Metric>;
+export type MetricsHistoryResponse = Metric[];
+export type MetricsStatsResponse = MetricsStats;

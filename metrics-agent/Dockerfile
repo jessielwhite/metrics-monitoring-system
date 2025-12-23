@@ -2,12 +2,18 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+# Copy requirements first for caching
+COPY metrics-agent/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy proto files
+COPY proto ./proto
+
+# Copy agent files
+COPY metrics-agent/*.py ./
 
 # Generate proto code
-RUN python -m grpc_tools.protoc --python_out=. --grpc_python_out=. -I../proto ../proto/test/test.proto
+RUN python -m grpc_tools.protoc --python_out=. --grpc_python_out=. -I./proto ./proto/test/test.proto
 
-CMD ["python", "agent.py"]
+# Use the gRPC-enabled agent
+CMD ["python", "agent_grpc.py"]

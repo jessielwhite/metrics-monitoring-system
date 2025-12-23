@@ -3,3 +3,4 @@ grpcio-tools
 psutil
 pymongo
 python-dotenv
+requests

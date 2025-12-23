@@ -1,14 +1,30 @@
-FROM rust:1.70 as builder
+FROM rust:1.83 as builder
+
+# Install protobuf compiler
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY . .
+# Copy proto files from root
+COPY proto ./proto
 
-RUN rm /app/Cargo.lock
+# Copy metrics-server files
+COPY metrics-server/Cargo.toml metrics-server/Cargo.lock* ./
+COPY metrics-server/build.rs ./
 
+# Create a dummy main.rs to build dependencies
+RUN mkdir -p src && echo "fn main() {}" > src/main.rs
+
+# Build dependencies only
+RUN cargo build --release || true
+
+# Now copy the actual source code
+COPY metrics-server/src ./src
+
+# Build the actual application
 RUN cargo build --release
 
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 

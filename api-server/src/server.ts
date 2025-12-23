@@ -1,12 +1,20 @@
 import express, { Request, Response } from "express";
 import { MongoClient, Db } from "mongodb";
-import dotenv from "dotenv";
 import cors from "cors";
+import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ path: '../config.env' });
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8081;
+const VERCEL_URL = process.env.VERCEL_URL;
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
+const RUST_SERVICE_URL = process.env.RUST_SERVICE_URL;
+const MONGODB_URI = process.env.MONGODB_URI;
+const DATABASE_NAME = process.env.DATABASE_NAME;
+const COLLECTION_NAME = process.env.COLLECTION_NAME;
+
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,40 +22,58 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "https://gpu-monitoring-dashboard-teal.vercel.app",
-      "https://gpu-dashboard.com",
-    ],
+      'http://localhost:3000',
+      'http://localhost:3001',
+      NEXT_PUBLIC_API_URL,
+      RUST_SERVICE_URL,
+      VERCEL_URL,
+    ].filter((url): url is string => url !== undefined),
     credentials: true,
   })
 );
 let db: Db;
 
-async function connectDB() {
-  const mongoUri = process.env.DB;
-  if (!mongoUri) {
-    throw new Error("MONGODB URI not set");
+async function connectDB(): Promise<{ client: MongoClient | null; db: Db }> {
+  if (db) {
+    return { client: null, db };
   }
 
-  const client = new MongoClient(mongoUri);
-  await client.connect();
-  db = client.db("gpu_monitoring");
-  console.log("Connected to MongoDB");
+  try {
+    const client = MONGODB_URI ? new MongoClient(MONGODB_URI) : null;
+    if (!client) {
+      throw new Error('MONGODB_URI is not defined');
+    }
+    await client.connect();
+    db = client.db(DATABASE_NAME);
+
+    // Test the connection
+    await db.admin().ping();
+
+    console.log('Connected to MongoDB successfully');
+    return { client, db };
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    throw error;
+  }
 }
 
 app.get("/api/metrics/current", async (req: Request, res: Response) => {
   try {
-    const latest = await db
-      .collection("metrics")
+    const latestRecord = await db
+      .collection(`${COLLECTION_NAME}`)
       .find()
       .sort({ timestamp: -1 })
       .limit(1)
       .toArray();
 
-    res.json(latest[0] || null);
+    if (latestRecord.length === 0) {
+      return res.json([]);
+    }
+
+    return res.json(latestRecord[0]);
   } catch (error) {
     console.error("Error fetching current metrics:", error);
-    res.status(500).json({ error: "Failed to fetch metrics" });
+    res.status(404).json({ error: "Metric not found" });
   }
 });
 
@@ -56,7 +82,7 @@ app.get("/api/metrics/history", async (req: Request, res: Response) => {
     const range = (req.query.range as string) || "1h";
 
     const latestRecord = await db
-      .collection("metrics")
+      .collection(`${COLLECTION_NAME}`)
       .find()
       .sort({ timestamp: -1 })
       .limit(1)
@@ -101,7 +127,7 @@ app.get("/api/metrics/history", async (req: Request, res: Response) => {
 app.get("/api/metrics/stats", async (req: Request, res: Response) => {
   try {
     const stats = await db
-      .collection("metrics")
+      .collection(`${COLLECTION_NAME}`)
       .aggregate([
         { $sort: { timestamp: -1 } },
         { $limit: 100 },
@@ -125,69 +151,17 @@ app.get("/api/metrics/stats", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/workload/start", async (req: Request, res: Response) => {
-  try {
-    const flaskUrl = process.env.FLASK_API_URL;
-    if (!flaskUrl) {
-      throw new Error("FLASK_API_URL not configured");
-    }
-
-    const response = await fetch(`${flaskUrl}/workload/start`, {
-      method: "POST",
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error("Error starting workload:", error);
-    res.status(500).json({ error: "Failed to start workload" });
-  }
-});
-
-app.post("/api/workload/stop", async (req: Request, res: Response) => {
-  try {
-    const flaskUrl = process.env.FLASK_API_URL;
-    if (!flaskUrl) {
-      throw new Error("FLASK_API_URL not configured");
-    }
-
-    const response = await fetch(`${flaskUrl}/workload/stop`, {
-      method: "POST",
-    });
-
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error("Error stopping workload:", error);
-    res.status(500).json({ error: "Failed to stop workload" });
-  }
-});
-
-app.get("/api/workload/status", async (req: Request, res: Response) => {
-  try {
-    const flaskUrl = process.env.FLASK_API_URL;
-    if (!flaskUrl) {
-      throw new Error("FLASK_API_URL not configured");
-    }
-
-    const response = await fetch(`${flaskUrl}/workload/status`);
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    console.error("Error fetching status:", error);
-    res.status(500).json({ error: "Failed to fetch status" });
-  }
-});
-
-app.get("/health", (req: Request, res: Response) => {
-  res.json({ status: "OK" });
-});
-
 async function start() {
   try {
     await connectDB();
   } catch (error) {
-    console.error("Database failed to connect");
+    console.error("Database failed to connect:", error);
+    console.log('MONGODB_URI:', MONGODB_URI);
+    console.log('DATABASE_NAME:', DATABASE_NAME);
+    console.log('\nPlease ensure:');
+    console.log('1. MongoDB is running (start with: brew services start mongodb-community or docker)');
+    console.log('2. config.env file exists in the root directory with valid MONGODB_URI');
+    console.log('3. MONGODB_URI format: mongodb://localhost:27017 or your MongoDB connection string\n');
   }
   app.listen(PORT, () => {
     console.log(`Node.js API server running on port ${PORT}`);

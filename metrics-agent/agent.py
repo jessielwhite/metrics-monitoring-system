@@ -8,53 +8,60 @@ import random
 from datetime import datetime
 
 def collect_metrics():
-    timestamp = datetime.now.isoformat() + 'Z'
-
+    timestamp = datetime.now().isoformat() + 'Z'
 
     # CPU usage
     utilization = psutil.cpu_percent(interval=1)
-    type = psutil.sdiskpart('/')
+    metric_type = "cpu"
     memory = psutil.virtual_memory()
-    memory_used = memory.used
-    memory_total = memory.total
-    process_id = os.getpid()
-    process_name = psutil.Process(process_id).name()
-    temperature = psutil.sensors_temperatures()['coretemp'][0].current
-    power_draw = psutil.sensors_battery().power_plugged
-    disk = psutil.disk_usage('/')
-    latency = random.uniform(10, 100)
-    throughput = random.uniform(100, 1000)
-
+    memory_used = memory.used // (1024 * 1024)  # Convert to MB
+    memory_total = memory.total // (1024 * 1024)  # Convert to MB
+    process_id = str(os.getpid())
+    process_name = psutil.Process(int(process_id)).name()
+    
+    # Use default values for sensors that may not be available in Docker
+    try:
+        temperature = psutil.sensors_temperatures()['coretemp'][0].current
+    except (KeyError, AttributeError):
+        temperature = random.uniform(40, 70)  # Default temperature range
+    
+    try:
+        power_draw = 100 if psutil.sensors_battery() and psutil.sensors_battery().power_plugged else 50
+    except (AttributeError, TypeError):
+        power_draw = random.uniform(80, 120)  # Default power range
+    
+    latency = round(random.uniform(10, 100), 1)
+    throughput = round(random.uniform(100, 1000), 1)
 
     return {
         'timestamp': timestamp,
         'process_id': process_id,
         'process_name': process_name,
-        'utilization': utilization,
-        'type': type,
+        'utilization': round(utilization, 1),
+        'type': metric_type,
         'latency': latency,
         'throughput': throughput,
-        'disk': disk,
         'memory_used': memory_used,
         'memory_total': memory_total,
-        'temperature': temperature,
-        'power_draw': power_draw,
+        'temperature': int(temperature),
+        'power_draw': int(power_draw),
     }
 
 def main():
     # Connect to server for gRPC fallback
-    RUST_SERVICE_URL = os.getenv(f"{RUST_SERVICE_URL}/metrics/ingest") 
-    channel = grpc.insecure_channel(RUST_SERVICE_URL)
-
+    RUST_SERVICE_URL = os.getenv("RUST_SERVICE_URL", "localhost:8080")
+    METRICS_ENDPOINT = f"http://{RUST_SERVICE_URL}/metrics/ingest"
+    
     print(f"Metrics Agent started...")
+    print(f"Sending metrics to: {METRICS_ENDPOINT}")
 
     while True:
         try:
             metrics_data = collect_metrics()
             response = requests.post(
-                RUST_SERVICE_URL, channel=channel, json=metrics_data, timeout=2)
+                METRICS_ENDPOINT, json=metrics_data, timeout=2)
             if response.status_code == 202:
-                print(f"Sent: {metrics_data}C")
+                print(f"Sent: {metrics_data}")
             else:
                 print(f"Error: {response.status_code}")
         except requests.exceptions.RequestException as e:

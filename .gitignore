@@ -18,9 +18,6 @@ dist
 *venv*
 system.yaml
 
-# Temp
-docker-compose.yaml
-
 # OSX
 .DS_Store
 
