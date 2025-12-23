@@ -17,7 +17,7 @@ services:
       - RUST_SERVICE_URL=0.0.0.0:8080
       - GRPC_PORT=50051
       - PORT=8081
-      - NEXT_PUBLIC_API_URL=${VERCEL_URL:-http://localhost:8081}
+      - NEXT_PUBLIC_API_URL=/api
       - GRPC_SERVER=localhost:50051
       - AGENT_ID=agent-docker-1
       - NODE_ENV=production
