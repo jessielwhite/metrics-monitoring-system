@@ -5,7 +5,7 @@ A distributed metrics monitoring system with gRPC communication, MongoDB persist
 ## System Components
 
 1. **Metrics Agent** (Python) - Containerized client that collects system metrics and submits via gRPC
-2. **Rust Server** - Backend with concurrent HTTP/gRPC servers, stores metrics in MongoDB
+2. **Rust Server** - Backend with concurrent HTTP/gRPC servers; stores metrics in MongoDB
 3. **API Server** (Node.js) - REST API layer for dashboard communication
 4. **Dashboard** (Next.js) - Real-time metrics visualization with interactive charts
 5. **MongoDB Atlas** - Cloud database for persistent metrics storage
